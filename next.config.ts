@@ -1,0 +1,16 @@
+import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "3000-iiafzdyxlv77mmaa8234p-4999d392.us1.manus.computer",
+  ],
+  async rewrites() {
+    const api = process.env.API_ORIGIN ?? "http://localhost:4000";
+    return [{ source: "/backend/:path*", destination: `${api}/:path*` }];
+  },
+};
+
+export default withNextIntl(nextConfig);

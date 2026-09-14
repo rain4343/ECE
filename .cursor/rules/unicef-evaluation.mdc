@@ -1,0 +1,25 @@
+---
+description: UNICEF Form No. 1 and Form No. 2 with eight core sections
+alwaysApply: true
+---
+
+# UNICEF Evaluation Forms
+
+Digitize **only** these official instruments. Item copy lives in `src/content/frameworks/`. Version instruments; never overwrite submitted scores.
+
+| Code | Document | Who submits |
+| FORM_1 | School/Kindergarten Evaluation Form (Form No. 1) | FIELD_MONITOR (official); COUNCIL_MEMBER (Parents & Teachers Council section only) |
+| FORM_2 | School Development Plan (Form No. 2) | FIELD_MONITOR; KINDERGARTEN_MANAGER for their site |
+
+## Eight sections (both forms)
+
+1. Building (بالەخانە)
+2. Water & Sanitation (ئاو و ئاودەست)
+3. Canteen / Store (فروشگا / حانووت)
+4. Educational & Learning Environment (ژینگەی پەروەردە و فێرکردن)
+5. Teachers (مامۆستایان)
+6. School Administration (بەڕێوەبەرایەتی قوتابخانه)
+7. Curricula & Programs (پرۆگرامەکان)
+8. Parents & Teachers Council (ئنجومەنی دایباب و مامۆستایان)
+
+Form 1 scores each indicator (1–4 or NA). Form 2 turns gaps into timed, owned actions per section. Labels are trilingual; scores stay numeric.
