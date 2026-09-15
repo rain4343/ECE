@@ -2,6 +2,8 @@ import { db } from "@/db";
 import { users, kindergartens } from "@/db/schema";
 import { AdminConsole } from "@/components/admin/admin-console";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPage() {
   const allUsers = await db.select().from(users);
   const allKindergartens = await db.select().from(kindergartens);
