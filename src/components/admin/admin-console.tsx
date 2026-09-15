@@ -48,11 +48,13 @@ export function AdminConsole() {
     const selectedRole = String(
       data.get("role") ?? "KINDERGARTEN_MANAGER",
     ) as UserRole;
-    const result = addUserToKindergarten({
-      kindergartenId: String(data.get("kindergartenId") ?? ""),
-      educationDirectorateId: String(data.get("educationDirectorateId") ?? ""),
-      displayName: String(data.get("displayName") ?? ""),
-      password: String(data.get("password") ?? ""),
+    const result = await createUserAction({
+    role: selectedRole,
+    kindergartenId: String(data.get("kindergartenId") ?? ""),
+    educationDirectorateId: String(data.get("educationDirectorateId") ?? ""),
+    displayName: String(data.get("displayName") ?? ""),
+    password: String(data.get("password") ?? ""),
+});
       role: selectedRole,
     });
     if (result === "missing_name") return setError(t("missingName"));
