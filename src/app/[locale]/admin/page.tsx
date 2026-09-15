@@ -14,9 +14,9 @@ export default async function AdminPage() {
     educationDirectorateId: u.educationDirectorateId,
   }));
 
-  const formattedKindergartens = allKindergartens.map((k) => ({
+  const formattedKindergartens = allKindergartens.map((k: any) => ({
     id: k.id,
-    name: k.name,
+    name: k.nameEn || k.nameCkb || k.nameAr || "Kindergarten",
     code: k.code ?? undefined,
   }));
 
