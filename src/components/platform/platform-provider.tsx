@@ -41,13 +41,6 @@ type PlatformContextValue = {
     childrenAge4: string;
     childrenAge5: string;
   }) => string | null;
-  addUserToKindergarten: (input: {
-    kindergartenId: string;
-    educationDirectorateId?: string;
-    displayName: string;
-    password: string;
-    role: UserRole;
-  }) => string | null;
   updateKindergarten: (
     id: string,
     patch: Partial<PlatformKindergarten>,
@@ -375,7 +368,6 @@ export function PlatformProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       addKindergarten,
-      addUserToKindergarten,
       updateKindergarten,
       deleteKindergarten,
       saveSubmission,
@@ -389,7 +381,6 @@ export function PlatformProvider({ children }: { children: React.ReactNode }) {
       logout,
       addKindergarten,
       addUserToKindergarten,
-      updateKindergarten,
       deleteKindergarten,
       saveSubmission,
     ],
