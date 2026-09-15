@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import db from "@/db";
 import { users } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import type { UserRole } from "@/lib/rbac";

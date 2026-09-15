@@ -24,7 +24,7 @@ const EXTRA_ROLES: UserRole[] = [
 export function AdminConsole() {
   const t = useTranslations("admin");
   const locale = useLocale() as AppLocale;
-  const { currentUser, state, addUserToKindergarten } = usePlatform();
+  const { currentUser, state } = usePlatform();
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole>("KINDERGARTEN_MANAGER");
