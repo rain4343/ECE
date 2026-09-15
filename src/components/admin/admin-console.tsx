@@ -1,44 +1,57 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, useTransition, type FormEvent } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { ShieldPlus, UsersRound } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { usePlatform } from "@/components/platform/platform-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  EDUCATION_DIRECTORATES,
-  educationDirectorateLabel,
-} from "@/content/education-directorates";
-import { kindergartenLabel } from "@/lib/platform-store";
-import type { AppLocale } from "@/i18n/config";
-import type { UserRole } from "@/lib/rbac";
+import { createUserAction } from "@/actions/admin-actions";
+
+type UserRole = "SUPER_ADMIN" | "DISTRICT_EDUCATION" | "KINDERGARTEN_MANAGER";
+
+interface PlatformUser {
+  id: string;
+  displayName: string;
+  role: UserRole;
+  kindergartenId?: string | null;
+  educationDirectorateId?: string | null;
+}
+
+interface Kindergarten {
+  id: string;
+  name: string;
+  code?: string;
+}
+
+interface AdminConsoleProps {
+  initialUsers: PlatformUser[];
+  kindergartens: Kindergarten[];
+  educationDirectorates: { id: string; name: string }[];
+}
 
 const EXTRA_ROLES: UserRole[] = [
   "KINDERGARTEN_MANAGER",
-  "FIELD_MONITOR",
-  "COUNCIL_MEMBER",
   "DISTRICT_EDUCATION",
+  "SUPER_ADMIN",
 ];
 
-export function AdminConsole() {
-  const t = useTranslations("admin");
-  const locale = useLocale() as AppLocale;
-  const { currentUser, state } = usePlatform();
+const EDUCATION_DIRECTORATES = [
+  { id: "sharbazher", name: "Sharbazher" },
+];
+
+export function AdminConsole({
+  initialUsers,
+  kindergartens,
+  educationDirectorates,
+}: AdminConsoleProps) {
+  const t = useTranslations("Admin");
+  const locale = useLocale();
+  const [role, setRole] = useState<UserRole>("KINDERGARTEN_MANAGER");
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
-  const [role, setRole] = useState<UserRole>("KINDERGARTEN_MANAGER");
-  const districtRole = role === "DISTRICT_EDUCATION";
+  const [isPending, startTransition] = useTransition();
 
-  if (currentUser?.role !== "SUPER_ADMIN") {
-    return (
-      <Card className="admin-panel">
-        <CardContent className="p-8 text-sm text-muted-foreground">
-          {t("adminsOnly")}
-        </CardContent>
-      </Card>
-    );
-  }
+  const districtRole = role === "DISTRICT_EDUCATION";
 
   async function onAddUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,7 +61,7 @@ export function AdminConsole() {
     const selectedRole = String(
       data.get("role") ?? "KINDERGARTEN_MANAGER",
     ) as UserRole;
-    
+
     const result = await createUserAction({
       role: selectedRole,
       kindergartenId: String(data.get("kindergartenId") ?? ""),
@@ -72,19 +85,6 @@ export function AdminConsole() {
         : t("userAdded"),
     );
   }
-    if (result === "missing_name") return setError(t("missingName"));
-    if (result === "duplicate_name") return setError(t("duplicateName"));
-    if (result === "missing_site") return setError(t("missingSite"));
-    if (result === "missing_directorate") return setError(t("missingDirectorate"));
-    if (result) return setError(t("adminsOnly"));
-    event.currentTarget.reset();
-    setRole("KINDERGARTEN_MANAGER");
-    setOk(
-      selectedRole === "DISTRICT_EDUCATION"
-        ? t("userAddedDistrict")
-        : t("userAdded"),
-    );
-  }
 
   return (
     <div className="admin-console flex flex-col gap-6">
@@ -100,7 +100,7 @@ export function AdminConsole() {
           <span className="admin-summary-icon"><UsersRound className="h-5 w-5" /></span>
           <div>
             <p className="admin-summary-label">{t("directory")}</p>
-            <p className="admin-summary-value">{state.users.length}</p>
+            <p className="admin-summary-value">{initialUsers.length}</p>
           </div>
         </div>
       </div>
@@ -137,7 +137,7 @@ export function AdminConsole() {
                 <select name="educationDirectorateId" required className="admin-control">
                   <option value="">{t("selectDistrict")}</option>
                   {EDUCATION_DIRECTORATES.map((item) => (
-                    <option key={item.id} value={item.id}>{educationDirectorateLabel(item.id, locale)}</option>
+                    <option key={item.id} value={item.id}>{item.name}</option>
                   ))}
                 </select>
               </label>
@@ -146,16 +146,16 @@ export function AdminConsole() {
                 <span>{t("kindergarten")}</span>
                 <select name="kindergartenId" required className="admin-control">
                   <option value="">{t("selectSite")}</option>
-                  {state.kindergartens.map((site) => (
-                    <option key={site.id} value={site.id}>{kindergartenLabel(site, locale)}</option>
+                  {kindergartens.map((site) => (
+                    <option key={site.id} value={site.id}>{site.name}</option>
                   ))}
                 </select>
               </label>
             )}
             <Field name="displayName" label={t("userName")} required />
-            <Field name="password" label={t("userPassword")} type="password" required minLength={12} />
+            <Field name="password" label={t("userPassword")} type="password" required />
             <div className="admin-form-actions">
-              <Button type="submit" className="admin-primary-button">{t("addUser")}</Button>
+              <Button type="submit" disabled={isPending} className="admin-primary-button">{t("addUser")}</Button>
             </div>
           </form>
         </CardContent>
@@ -167,7 +167,7 @@ export function AdminConsole() {
             <p className="admin-eyebrow">UNICEF · DIRECTORY</p>
             <CardTitle>{t("directory")}</CardTitle>
           </div>
-          <span className="admin-count-badge">{state.users.length}</span>
+          <span className="admin-count-badge">{initialUsers.length}</span>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="admin-table w-full min-w-[680px] text-start text-sm">
@@ -179,13 +179,13 @@ export function AdminConsole() {
               </tr>
             </thead>
             <tbody>
-              {state.users.map((user) => {
-                const site = state.kindergartens.find((row) => row.id === user.kindergartenId);
+              {initialUsers.map((user) => {
+                const site = kindergartens.find((row) => row.id === user.kindergartenId);
                 const scope = user.role === "SUPER_ADMIN"
                   ? t("global")
                   : user.role === "DISTRICT_EDUCATION" && user.educationDirectorateId
-                    ? educationDirectorateLabel(user.educationDirectorateId, locale)
-                    : site ? kindergartenLabel(site, locale) : "—";
+                    ? "Sharbazher"
+                    : site ? site.name : "—";
                 return (
                   <tr key={user.id}>
                     <td className="font-semibold text-heading">{user.displayName}</td>
@@ -206,26 +206,17 @@ function Field({
   name,
   label,
   type = "text",
-  required,
-  minLength,
+  required = false,
 }: {
   name: string;
   label: string;
   type?: string;
   required?: boolean;
-  minLength?: number;
 }) {
   return (
     <label className="admin-field">
       <span>{label}</span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        minLength={minLength}
-        autoComplete={type === "password" ? "new-password" : "off"}
-        className="admin-control"
-      />
+      <input name={name} type={type} required={required} className="admin-control" />
     </label>
   );
 }
