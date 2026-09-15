@@ -1,30 +1,36 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { isAppLocale } from "@/i18n/config";
-import { notFound } from "next/navigation";
+import { db } from "@/db";
+import { users, kindergartens } from "@/db/schema";
 import { AdminConsole } from "@/components/admin/admin-console";
 
-export default async function AdminPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  if (!isAppLocale(locale)) notFound();
-  setRequestLocale(locale);
-  const t = await getTranslations("admin");
+export default async function AdminPage() {
+  const allUsers = await db.select().from(users);
+  const allKindergartens = await db.select().from(kindergartens);
+
+  const formattedUsers = allUsers.map((u) => ({
+    id: u.id,
+    displayName: u.displayName ?? "Unknown",
+    role: u.role as any,
+    kindergartenId: u.kindergartenId,
+    educationDirectorateId: u.educationDirectorateId,
+  }));
+
+  const formattedKindergartens = allKindergartens.map((k) => ({
+    id: k.id,
+    name: k.name,
+    code: k.code ?? undefined,
+  }));
+
+  const educationDirectorates = [
+    { id: "sharbazher", name: "Sharbazher Directorate of Education" },
+  ];
 
   return (
-    <div className="admin-route dark -mx-4 -my-8 min-h-[calc(100vh-5rem)] px-4 py-8 lg:-mx-10 lg:-my-10 lg:px-10 lg:py-10">
-      <header>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-unicef">
-          UNICEF
-        </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-heading">
-          {t("title")}
-        </h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">{t("intro")}</p>
-      </header>
-      <AdminConsole />
+    <div className="container mx-auto py-8">
+      <AdminConsole
+        initialUsers={formattedUsers}
+        kindergartens={formattedKindergartens}
+        educationDirectorates={educationDirectorates}
+      />
     </div>
   );
 }

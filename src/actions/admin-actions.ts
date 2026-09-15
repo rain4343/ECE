@@ -33,7 +33,7 @@ export async function createUserAction(params: CreateUserParams) {
 
   try {
     await db.insert(users).values({
-      name: params.displayName,
+      displayName: params.displayName,
       email: params.email || dummyEmail,
       passwordHash: hashedPassword,
       role: params.role,
