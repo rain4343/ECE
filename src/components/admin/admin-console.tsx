@@ -40,7 +40,7 @@ export function AdminConsole() {
     );
   }
 
-  function onAddUser(event: FormEvent<HTMLFormElement>) {
+  async function onAddUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setOk(null);
@@ -48,15 +48,30 @@ export function AdminConsole() {
     const selectedRole = String(
       data.get("role") ?? "KINDERGARTEN_MANAGER",
     ) as UserRole;
+    
     const result = await createUserAction({
-    role: selectedRole,
-    kindergartenId: String(data.get("kindergartenId") ?? ""),
-    educationDirectorateId: String(data.get("educationDirectorateId") ?? ""),
-    displayName: String(data.get("displayName") ?? ""),
-    password: String(data.get("password") ?? ""),
-});
       role: selectedRole,
+      kindergartenId: String(data.get("kindergartenId") ?? ""),
+      educationDirectorateId: String(data.get("educationDirectorateId") ?? ""),
+      displayName: String(data.get("displayName") ?? ""),
+      password: String(data.get("password") ?? ""),
     });
+
+    if (!result.success) {
+      if (result.error === "missing_name") return setError(t("missingName"));
+      if (result.error === "missing_site") return setError(t("missingSite"));
+      if (result.error === "missing_directorate") return setError(t("missingDirectorate"));
+      return setError(t("adminsOnly"));
+    }
+
+    event.currentTarget.reset();
+    setRole("KINDERGARTEN_MANAGER");
+    setOk(
+      selectedRole === "DISTRICT_EDUCATION"
+        ? t("userAddedDistrict")
+        : t("userAdded"),
+    );
+  }
     if (result === "missing_name") return setError(t("missingName"));
     if (result === "duplicate_name") return setError(t("duplicateName"));
     if (result === "missing_site") return setError(t("missingSite"));
